@@ -1,1 +1,1 @@
-SynapseHR is an AI-powered HRMS designed to automate and optimize human resource operations. It combines employee management, attendance, leave tracking, recruitment, and performance analytics into a single intelligent platform, enabling organizations to manage their workforce more efficiently and make data-driven HR decisions.
+

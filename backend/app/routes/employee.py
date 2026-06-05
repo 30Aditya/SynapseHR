@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-
+from app.auth.roles import require_role
 from app.models.employee import Employee
 from app.schemas.employee import EmployeeCreate
 from app.dependencies import get_db
@@ -14,10 +14,16 @@ router = APIRouter(
 @router.post("/")
 def create_employee(
     employee: EmployeeCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user=Depends(require_role("Admin"))
 ):
+
+    employee_count = db.query(Employee).count()
+
+    employee_code = f"EMP{1000 + employee_count + 1}"
+
     new_employee = Employee(
-        employee_code="EMP1000",
+        employee_code=employee_code,
         first_name=employee.first_name,
         last_name=employee.last_name,
         email=employee.email,

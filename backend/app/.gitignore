@@ -1,15 +1,30 @@
-# Backend
-backend/venv/
+# Environment Variables
+.env
+*.env
 backend/.env
+backend/app/.env
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Frontend
-frontend/node_modules/
-frontend/.next/
+# Virtual Environments
+venv/
+.venv/
+backend/venv/
+
+# FastAPI / Python Cache
+.pytest_cache/
+.mypy_cache/
 
 # VS Code
 .vscode/
 
 # Logs
 *.log
+
+# Frontend
+frontend/node_modules/
+frontend/.next/

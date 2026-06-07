@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import UploadFile
 from fastapi import File
+from fastapi import Form
 from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
@@ -12,6 +13,7 @@ import uuid
 from app.dependencies import get_db
 
 from app.models.job_opening import JobOpening
+from app.models.candidate_resume import CandidateResume
 
 from app.AI.resume_parser import (
     extract_text_from_pdf
@@ -34,6 +36,7 @@ router = APIRouter(
 @router.post("/screen-resume/{job_id}")
 async def screen_resume(
     job_id: int,
+    candidate_name: str = Form(...),
     resume: UploadFile = File(...),
     db: Session = Depends(get_db),
     user=Depends(require_role("Admin"))
@@ -92,11 +95,46 @@ async def screen_resume(
         )
     )
 
+    ai_recommendation = (
+        recommendation(score)
+    )
+
+    candidate = CandidateResume(
+        candidate_name=candidate_name,
+        resume_text=resume_text,
+        job_description=job.job_description,
+        score=score,
+        recommendation=ai_recommendation
+    )
+
+    db.add(candidate)
+
+    db.commit()
+
+    db.refresh(candidate)
+
     return {
+        "candidate_id": candidate.id,
+        "candidate_name": candidate.candidate_name,
         "job_title": job.job_title,
         "score": score,
-        "recommendation":
-            recommendation(score),
-        "missing_skills":
-            missing_skills
+        "recommendation": ai_recommendation,
+        "missing_skills": missing_skills
     }
+
+
+@router.get("/candidates")
+def get_candidates(
+    db: Session = Depends(get_db),
+    user=Depends(require_role("Admin"))
+):
+
+    candidates = (
+        db.query(CandidateResume)
+        .order_by(
+            CandidateResume.score.desc()
+        )
+        .all()
+    )
+
+    return candidates

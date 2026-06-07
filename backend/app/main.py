@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 
@@ -14,8 +15,6 @@ from app.models.job_opening import JobOpening
 from app.models.interview_session import InterviewSession
 from app.models.interview_message import InterviewMessage
 
-
-
 # Routers
 from app.routes.auth import router as auth_router
 from app.routes.employee import router as employee_router
@@ -26,8 +25,7 @@ from app.routes.performance import router as performance_router
 from app.routes.ai_recruitment import router as ai_router
 from app.routes.job_opening import router as job_router
 from app.routes.interview import router as interview_router
-
-
+from app.routes.attrition import router as attrition_router
 
 app = FastAPI()
 
@@ -42,7 +40,18 @@ app.include_router(performance_router)
 app.include_router(ai_router)
 app.include_router(job_router)
 app.include_router(interview_router)
+app.include_router(attrition_router)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():

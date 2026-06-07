@@ -14,8 +14,7 @@ router = APIRouter(
 @router.post("/")
 def create_employee(
     employee: EmployeeCreate,
-    db: Session = Depends(get_db),
-    user=Depends(require_role("Admin"))
+    db: Session = Depends(get_db)
 ):
 
     employee_count = db.query(Employee).count()

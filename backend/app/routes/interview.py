@@ -1,6 +1,12 @@
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import UploadFile
+from fastapi import File
+from fastapi import Form
+
+import os
+import uuid
 
 from sqlalchemy.orm import Session
 
@@ -21,6 +27,10 @@ from app.schemas.interview import (
 
 from app.AI.interview_agent import (
     evaluate_candidate
+)
+
+from app.AI.resume_parser import (
+    extract_text_from_pdf
 )
 
 router = APIRouter(
@@ -60,23 +70,56 @@ resume_store = {}
 
 
 @router.post("/start")
-def start_interview(
-    request: StartInterviewRequest,
+async def start_interview(
+    candidate_name: str = Form(...),
+    job_title: str = Form(...),
+    resume: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
 
+    os.makedirs(
+        "uploads",
+        exist_ok=True
+    )
+
+    filename = (
+        str(uuid.uuid4())
+        + ".pdf"
+    )
+
+    filepath = (
+        f"uploads/{filename}"
+    )
+
+    with open(
+        filepath,
+        "wb"
+    ) as buffer:
+
+        buffer.write(
+            await resume.read()
+        )
+
+    resume_text = (
+        extract_text_from_pdf(
+            filepath
+        )
+    )
+
     session = InterviewSession(
-        candidate_name=request.candidate_name,
-        job_title=request.job_title
+        candidate_name=candidate_name,
+        job_title=job_title
     )
 
     db.add(session)
+
     db.commit()
+
     db.refresh(session)
 
     resume_store[
         session.id
-    ] = request.resume_text
+    ] = resume_text
 
     first_question = (
         INTERVIEW_QUESTIONS[0]
@@ -96,7 +139,6 @@ def start_interview(
         "session_id": session.id,
         "question": first_question
     }
-
 
 @router.post("/respond/{session_id}")
 def respond(

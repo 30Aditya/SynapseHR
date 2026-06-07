@@ -5,18 +5,27 @@ sqlalchemy
 psycopg2-binary
 
 pydantic
+email-validator
+
 python-dotenv
 
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt
 
-google-generativeai
-
 python-multipart
 
-PyPDF2
+google-generativeai
 
-scikit-learn
+sentence-transformers
+transformers
+torch
+
+PyPDF2
+PyMuPDF
+
 numpy
 pandas
+scikit-learn
+
+aiofiles
